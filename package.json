@@ -1,0 +1,26 @@
+{
+  "name": "proof-of-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Verifiable audit layer for AI agents: Nobulex-signed receipts persisted on Walrus and anchored on Sui.",
+  "scripts": {
+    "keygen": "bun src/keygen.ts",
+    "setup": "bun src/setup-wallet.ts",
+    "balances": "bun src/balances.ts",
+    "core-loop": "bun src/core-loop.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mysten/sui": "^2.19.0",
+    "@mysten/walrus": "^1.2.1",
+    "@nobulex/core": "^0.2.1",
+    "@nobulex/sdk": "^0.2.2",
+    "dotenv": "^16.4.5",
+    "undici": "^6.21.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.14",
+    "typescript": "^5.7.2"
+  }
+}
