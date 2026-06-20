@@ -36,6 +36,12 @@ export function getClient() {
     baseUrl: SUI_RPC_URL,
   }).$extend(
     walrus({
+      // Direct-to-node writes are flaky on testnet; the upload relay reliably
+      // fans slivers out to storage nodes for a small SUI tip.
+      uploadRelay: {
+        host: 'https://upload-relay.testnet.walrus.space',
+        sendTip: { max: 1_000 },
+      },
       storageNodeClientOptions: { timeout: 60_000 },
     }),
   );
