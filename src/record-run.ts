@@ -2,7 +2,8 @@ import { generateKeyPair, generateId } from '@nobulex/crypto';
 import { buildCovenant, type Issuer, type Beneficiary } from '@nobulex/core';
 import { ActionLogBuilder } from '@nobulex/action-log';
 import { getClient, getKeypair } from './env';
-import { buildRunManifest, verifyRunManifest, type RunManifest } from './manifest';
+import { buildRunManifest, verifyRunManifest } from './manifest';
+import { WalrusReceiptSink } from './sink';
 
 // Stand-in for a real agent: three governed actions producing a hash-chained log.
 // (Swapped for a real LLM agent later; the receipt/verify path is identical.)
@@ -61,36 +62,23 @@ async function main() {
   console.log('headHash :', manifest.signature.headHash);
   console.log('actions  :', manifest.actionLog.entries.map((e) => e.action).join(' -> '));
 
-  const bytes = new TextEncoder().encode(JSON.stringify(manifest));
-  console.log(`\n--- storing manifest on Walrus (${bytes.byteLength} bytes) ---`);
-
-  const client = getClient();
-  const signer = getKeypair();
-  const { blobId, blobObject } = await client.walrus.writeBlob({
-    blob: bytes,
-    deletable: true,
-    epochs: 3,
-    signer,
-  });
-  console.log('blobId      :', blobId);
-  console.log('suiObjectId :', blobObject.id);
+  console.log('\n--- storing manifest on Walrus ---');
+  const sink = new WalrusReceiptSink({ client: getClient(), signer: getKeypair() });
+  const persisted = await sink.persistRun(manifest);
+  console.log('blobId      :', persisted.blobId);
+  console.log('suiObjectId :', persisted.suiObjectId);
+  console.log('chainRoot   :', persisted.chainRoot, `(${persisted.size} bytes)`);
 
   console.log('\n--- reading back + verifying from Walrus ---');
-  const readBytes = new Uint8Array(await client.walrus.readBlob({ blobId }));
+  const loaded = await sink.loadRun(persisted.blobId);
+  const result = await verifyRunManifest(loaded);
 
-  const sameLength = readBytes.byteLength === bytes.byteLength;
-  const sameBytes = sameLength && readBytes.every((b, i) => b === bytes[i]);
-  console.log('byte-for-byte round-trip:', sameBytes ? 'OK' : 'MISMATCH');
-
-  const parsed = JSON.parse(new TextDecoder().decode(readBytes)) as RunManifest;
-  const result = await verifyRunManifest(parsed);
-
-  console.log('\nverification:');
+  console.log('verification:');
   for (const c of result.checks) {
     console.log(`  [${c.ok ? 'PASS' : 'FAIL'}] ${c.name}${c.detail ? ` — ${c.detail}` : ''}`);
   }
-  console.log(`\noverall: ${result.valid && sameBytes ? 'VERIFIED ✓' : 'FAILED ✗'}`);
-  console.log('\nWalruscan:', `https://walruscan.com/testnet/blob/${blobId}`);
+  console.log(`\noverall: ${result.valid ? 'VERIFIED ✓' : 'FAILED ✗'}`);
+  console.log('\nWalruscan:', `https://walruscan.com/testnet/blob/${persisted.blobId}`);
 }
 
 main().catch((e) => {

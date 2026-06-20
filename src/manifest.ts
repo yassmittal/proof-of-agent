@@ -1,6 +1,30 @@
-import { verifyIntegrity, type ActionLog } from '@nobulex/action-log';
+import { verifyIntegrity, computeEntryHash, type ActionLog } from '@nobulex/action-log';
 import { signString, verify, toHex, fromHex, type KeyPair } from '@nobulex/crypto';
 import { computeId, type CovenantDocument } from '@nobulex/core';
+
+/**
+ * Independently re-derive the head of the hash chain purely from action content,
+ * ignoring the hashes stored in the log. This is the value a verifier recomputes
+ * and compares against the root anchored on Sui — so it must be deterministic.
+ */
+export function computeChainRoot(log: ActionLog): string {
+  let previousHash: string | null = null;
+  let head = '';
+  for (const e of log.entries) {
+    head = computeEntryHash({
+      index: e.index,
+      timestamp: e.timestamp,
+      agentDid: e.agentDid,
+      action: e.action,
+      resource: e.resource,
+      params: e.params,
+      outcome: e.outcome,
+      previousHash,
+    });
+    previousHash = head;
+  }
+  return head;
+}
 
 /**
  * A self-contained, verifiable record of one agent run.
@@ -91,9 +115,15 @@ export async function verifyRunManifest(m: RunManifest): Promise<ManifestVerific
     detail: integrity.errors.join('; ') || undefined,
   });
 
-  // 2. The signed head hash equals the log's actual head.
-  const headMatches = m.signature.headHash === (m.actionLog.headHash ?? '');
-  checks.push({ name: 'signature.headHash matches log head', ok: headMatches });
+  // 2. The signed head hash equals an independently recomputed chain root.
+  //    (Recomputing from action content alone catches a tampered headHash field.)
+  const recomputedRoot = computeChainRoot(m.actionLog);
+  const headMatches = m.signature.headHash === recomputedRoot;
+  checks.push({
+    name: 'signature.headHash matches recomputed chain root',
+    ok: headMatches,
+    detail: headMatches ? undefined : `expected ${recomputedRoot}`,
+  });
 
   // 3. The signature over the head hash verifies against the agent's public key.
   let sigOk = false;

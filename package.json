@@ -9,6 +9,7 @@
     "setup": "bun src/setup-wallet.ts",
     "balances": "bun src/balances.ts",
     "record-run": "bun src/record-run.ts",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
