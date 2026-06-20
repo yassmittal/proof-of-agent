@@ -25,8 +25,15 @@ export const UPLOAD_RELAY_MAX_TIP = 1_000;
 // Epochs a stored blob stays alive unless overridden.
 export const DEFAULT_STORAGE_EPOCHS = 3;
 
-// Claude model that drives the live agent (src/agent-claude.ts).
+// Claude model for the first-party agent path (src/agent-claude.ts).
 export const AGENT_MODEL = 'claude-opus-4-8';
+
+// Default AWS region for the Bedrock path; overridden by the AWS_REGION env var.
+export const BEDROCK_REGION = 'us-east-1';
+
+// Default Bedrock model for the Converse agent (src/agent-bedrock.ts). The audit layer
+// is model-agnostic; any tool-calling Bedrock model works. Override with BEDROCK_MODEL.
+export const BEDROCK_MODEL = 'mistral.mistral-large-3-675b-instruct';
 
 export const explorer = {
   blob: (blobId: string) => `https://walruscan.com/testnet/blob/${blobId}`,

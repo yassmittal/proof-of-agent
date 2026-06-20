@@ -12,3 +12,5 @@ export { anchorRun, readAnchor, type AnchorResult, type OnChainAnchor } from './
 export { verifyAnchor, type AnchorVerification } from './verify';
 export { simulateAgentRun } from './agent';
 export { runClaudeAgent } from './agent-claude';
+export { runBedrockAgent } from './agent-bedrock';
+export { runAgent } from './run-agent';

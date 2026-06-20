@@ -5,7 +5,7 @@ import { explorer } from "@sdk/config";
 import styles from "./page.module.css";
 
 const EXAMPLE_ANCHOR =
-  "0x53e2001ef0f2d5507f4f1a6a97cd4162f34b54427047aca47f485dd3ccbe0790";
+  "0x3afd54d0bae03846f6de047974f22943447476a6edbd6c5bea448e040a0998af";
 
 type Check = { name: string; ok: boolean; detail?: string };
 

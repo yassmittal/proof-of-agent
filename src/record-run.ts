@@ -2,15 +2,10 @@ import { getClient, getKeypair } from './env';
 import { explorer } from './config';
 import { verifyRunManifest } from './manifest';
 import { WalrusReceiptSink } from './sink';
-import { simulateAgentRun } from './agent';
-import { runClaudeAgent } from './agent-claude';
+import { runAgent } from './run-agent';
 
 async function main() {
-  // Use the live Claude agent when a key is present; fall back to the deterministic
-  // stand-in so the pipeline still runs offline.
-  const live = !!process.env.ANTHROPIC_API_KEY;
-  console.log(live ? '--- running live Claude agent ---' : '--- simulating agent run ---');
-  const manifest = live ? await runClaudeAgent() : await simulateAgentRun();
+  const manifest = await runAgent();
   console.log('runId    :', manifest.runId);
   console.log('agent did:', manifest.agent.did);
   console.log('headHash :', manifest.signature.headHash);

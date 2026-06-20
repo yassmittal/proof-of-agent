@@ -33,10 +33,11 @@ Agent action ─► Nobulex hash-chained receipt ─► run manifest ─► Walr
 
 ## The covenant-governed agent
 
-The live agent is a portfolio-risk assistant powered by Claude. Its policy is written once in
-[Nobulex CCL](https://nobulex.com) and used twice — to build the signed covenant *and* to enforce
-every tool call at runtime, so what the agent is permitted to do can never drift from what the
-covenant promises:
+The live agent is a portfolio-risk assistant driven by an LLM — the first-party Anthropic API, or
+**any tool-calling model on Amazon Bedrock** (the audit layer is model-agnostic by design). Its policy
+is written once in [Nobulex CCL](https://nobulex.com) and used twice — to build the signed covenant
+*and* to enforce every tool call at runtime, so what the agent is permitted to do can never drift from
+what the covenant promises:
 
 ```
 permit read on '/market/**'
@@ -48,12 +49,14 @@ deny  notify on '/public/**'
 
 Each tool the model invokes is mapped to a governed `(action, resource)` pair, checked against the
 covenant before it runs, and recorded as a receipt — with a `blocked` outcome if the covenant denies
-it. Set `ANTHROPIC_API_KEY` to run it; without a key the pipeline falls back to a deterministic
-simulated agent, so every step below works offline too.
+it. It runs on either **the first-party Anthropic API** (`ANTHROPIC_API_KEY`) or **Amazon Bedrock**
+(`AWS_BEARER_TOKEN_BEDROCK` + `AWS_REGION`); without either, the pipeline falls back to a
+deterministic simulated agent, so every step below works offline too.
 
 ## Stack
 
-Bun + TypeScript + Move. Claude (`claude-opus-4-8`) drives the agent. Runs on Sui + Walrus testnet.
+Bun + TypeScript + Move. The agent runs on the first-party Anthropic API (`claude-opus-4-8`) or any
+tool-calling Amazon Bedrock model (default `mistral.mistral-large-3`). Runs on Sui + Walrus testnet.
 
 ## Setup
 
@@ -64,15 +67,16 @@ cp .env.example .env      # set SUI_PRIVATE_KEY to the printed secret
 # fund the address with testnet SUI, then:
 bun run setup             # swaps 0.5 SUI -> WAL (Walrus storage token)
 bun run balances          # check SUI + WAL
-# optional, for the live agent: set ANTHROPIC_API_KEY and AUDIT_ANCHOR_PACKAGE_ID in .env
+# optional, for the live agent: set AUDIT_ANCHOR_PACKAGE_ID and either
+#   ANTHROPIC_API_KEY  (first-party)  or  AWS_BEARER_TOKEN_BEDROCK + AWS_REGION  (Bedrock)
 ```
 
 ## Run a full audit cycle
 
 ```bash
-bun run record-run        # agent runs -> manifest -> Walrus blob; prints { blobId, suiObjectId }
-bun run anchor <suiObjectId> <chainRoot>   # anchors the run on Sui; prints the anchor object ID
-bun run verify <anchorObjectId>            # re-verifies everything from the anchor alone (10/10 -> VERIFIED)
+bun run record-run            # agent runs -> manifest -> Walrus blob -> re-read + verify
+bun run anchor                # full pipeline: agent -> Walrus -> Sui anchor; prints the anchor object ID
+bun run verify <anchorObjectId>   # re-verifies everything from the anchor alone (10/10 -> VERIFIED)
 ```
 
 Then launch the public verifier:

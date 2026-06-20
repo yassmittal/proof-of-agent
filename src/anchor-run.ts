@@ -2,12 +2,12 @@ import { normalizeSuiAddress } from '@mysten/sui/utils';
 import { getClient, getKeypair, getPackageId } from './env';
 import { explorer } from './config';
 import { WalrusReceiptSink } from './sink';
-import { simulateAgentRun } from './agent';
+import { runAgent } from './run-agent';
 import { anchorRun, readAnchor } from './anchor';
 
 async function main() {
-  console.log('--- simulating agent run ---');
-  const manifest = await simulateAgentRun();
+  console.log('--- running agent ---');
+  const manifest = await runAgent();
   console.log('agent did:', manifest.agent.did);
 
   const client = getClient();
