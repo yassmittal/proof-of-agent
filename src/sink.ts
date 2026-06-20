@@ -1,10 +1,9 @@
 import type { Signer } from '@mysten/sui/cryptography';
 import { computeChainRoot, type RunManifest } from './manifest';
 import { DEFAULT_STORAGE_EPOCHS } from './config';
-import type { getClient } from './env';
+import type { WalrusClient } from './walrus-client';
 
-/** A Walrus-capable client (Sui gRPC client extended with `.walrus`). */
-type WalrusCapableClient = ReturnType<typeof getClient>;
+type WalrusCapableClient = WalrusClient;
 
 /** Everything needed to anchor a stored run on Sui and later verify it. */
 export interface PersistedRun {

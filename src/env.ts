@@ -1,15 +1,8 @@
 import 'dotenv/config';
-import { SuiGrpcClient } from '@mysten/sui/grpc';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { walrus } from '@mysten/walrus';
 import { Agent, setGlobalDispatcher } from 'undici';
-import {
-  NETWORK,
-  SUI_FULLNODE_URL,
-  WALRUS_UPLOAD_RELAY_URL,
-  WALRUS_TIMEOUT_MS,
-  UPLOAD_RELAY_MAX_TIP,
-} from './config';
+import { SUI_FULLNODE_URL, WALRUS_TIMEOUT_MS } from './config';
+import { createWriteClient } from './walrus-client';
 
 // Raise the 10s default connect timeout — Walrus nodes are often slower than that.
 setGlobalDispatcher(
@@ -30,15 +23,7 @@ export function getPackageId(): string {
   return id;
 }
 
-/** Sui gRPC client extended with the Walrus client (`.walrus.*`). */
+/** Read + write Walrus client for the CLI scripts. */
 export function getClient() {
-  return new SuiGrpcClient({
-    network: NETWORK,
-    baseUrl: process.env.SUI_RPC_URL ?? SUI_FULLNODE_URL,
-  }).$extend(
-    walrus({
-      uploadRelay: { host: WALRUS_UPLOAD_RELAY_URL, sendTip: { max: UPLOAD_RELAY_MAX_TIP } },
-      storageNodeClientOptions: { timeout: WALRUS_TIMEOUT_MS },
-    }),
-  );
+  return createWriteClient(process.env.SUI_RPC_URL ?? SUI_FULLNODE_URL);
 }

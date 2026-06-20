@@ -1,10 +1,10 @@
 import { blobIdFromInt } from '@mysten/walrus';
 import { WALRUS_BLOB_TYPE } from './config';
-import type { getClient } from './env';
+import type { WalrusClient } from './walrus-client';
 import { readAnchor, type OnChainAnchor } from './anchor';
 import { verifyRunManifest, type ManifestCheck, type RunManifest } from './manifest';
 
-type Client = ReturnType<typeof getClient>;
+type Client = WalrusClient;
 
 export interface AnchorVerification {
   valid: boolean;

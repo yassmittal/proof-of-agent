@@ -3,11 +3,11 @@ import { bcs } from '@mysten/sui/bcs';
 import { normalizeSuiAddress } from '@mysten/sui/utils';
 import type { Signer } from '@mysten/sui/cryptography';
 import { fromHex, toHex } from '@nobulex/crypto';
-import type { getClient } from './env';
+import type { WalrusClient } from './walrus-client';
 import type { RunManifest } from './manifest';
 import type { PersistedRun } from './sink';
 
-type Client = ReturnType<typeof getClient>;
+type Client = WalrusClient;
 
 /** BCS layout of the on-chain `audit_anchor::AuditAnchor` Move struct content. */
 const AuditAnchorBcs = bcs.struct('AuditAnchor', {
