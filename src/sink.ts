@@ -7,8 +7,10 @@ type WalrusCapableClient = ReturnType<typeof getClient>;
 
 /** The outcome of persisting a run: everything Phase 3 needs to anchor it on Sui. */
 export interface PersistedRun {
-  /** Walrus blob ID (content hash) — read the manifest back with this. */
+  /** Walrus blob ID (content hash, base64url) — read the manifest back with this. */
   blobId: string;
+  /** Walrus blob ID as a u256 decimal string — what the on-chain anchor stores. */
+  blobIdU256: string;
   /** Sui object ID of the on-chain Walrus Blob. */
   suiObjectId: string;
   /** Independently recomputed head of the receipt hash chain. */
@@ -51,6 +53,7 @@ export class WalrusReceiptSink {
     });
     return {
       blobId,
+      blobIdU256: String(blobObject.blob_id),
       suiObjectId: blobObject.id,
       chainRoot: computeChainRoot(manifest.actionLog),
       size: bytes.byteLength,

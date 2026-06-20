@@ -1,58 +1,7 @@
-import { generateKeyPair, generateId } from '@nobulex/crypto';
-import { buildCovenant, type Issuer, type Beneficiary } from '@nobulex/core';
-import { ActionLogBuilder } from '@nobulex/action-log';
 import { getClient, getKeypair } from './env';
-import { buildRunManifest, verifyRunManifest } from './manifest';
+import { verifyRunManifest } from './manifest';
 import { WalrusReceiptSink } from './sink';
-
-// Stand-in for a real agent: three governed actions producing a hash-chained log.
-// (Swapped for a real LLM agent later; the receipt/verify path is identical.)
-async function simulateAgentRun() {
-  const issuerKeys = await generateKeyPair();
-  const agentKeys = await generateKeyPair();
-
-  const issuer: Issuer = {
-    id: 'org:proof-of-agent',
-    publicKey: issuerKeys.publicKeyHex,
-    role: 'issuer',
-    name: 'Proof-of-Agent',
-  };
-  const beneficiary: Beneficiary = {
-    id: `agent:${agentKeys.publicKeyHex.slice(0, 12)}`,
-    publicKey: agentKeys.publicKeyHex,
-    role: 'beneficiary',
-    name: 'Demo Agent',
-  };
-
-  const covenant = await buildCovenant({
-    issuer,
-    beneficiary,
-    constraints: [
-      "permit read on '/data/**'",
-      "permit analyze on '/models/**'",
-      "permit notify on '/users/**'",
-      "deny write on '**'",
-    ].join('\n'),
-    privateKey: issuerKeys.privateKey,
-    metadata: { name: 'Demo Run Policy', tags: ['demo'] },
-  });
-
-  const agentDid = `did:nobulex:${agentKeys.publicKeyHex}`;
-  const log = new ActionLogBuilder(agentDid);
-  log.append({ action: 'read', resource: '/data/market-prices', params: { symbol: 'SUI' }, outcome: 'success' });
-  log.append({ action: 'analyze', resource: '/models/forecast', params: { horizon: '7d' }, outcome: 'success' });
-  log.append({ action: 'notify', resource: '/users/owner', params: { channel: 'email' }, outcome: 'success' });
-
-  const manifest = await buildRunManifest({
-    runId: generateId(),
-    agentKeys,
-    covenant,
-    actionLog: log.toLog(),
-    citedInputBlobIds: [],
-  });
-
-  return manifest;
-}
+import { simulateAgentRun } from './agent';
 
 async function main() {
   console.log('--- simulating agent run ---');

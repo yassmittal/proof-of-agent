@@ -29,6 +29,13 @@ export function getKeypair(): Ed25519Keypair {
   return Ed25519Keypair.fromSecretKey(sk);
 }
 
+/** Published audit_anchor Move package ID (required for anchoring/verifying). */
+export function getPackageId(): string {
+  const id = process.env.AUDIT_ANCHOR_PACKAGE_ID;
+  if (!id) throw new Error('AUDIT_ANCHOR_PACKAGE_ID is not set in .env');
+  return id;
+}
+
 /** Sui gRPC client extended with the Walrus client (`.walrus.*`). */
 export function getClient() {
   return new SuiGrpcClient({

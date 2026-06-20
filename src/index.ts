@@ -8,3 +8,4 @@ export {
   type ManifestVerification,
 } from './manifest';
 export { WalrusReceiptSink, type PersistedRun } from './sink';
+export { anchorRun, readAnchor, type AnchorResult, type OnChainAnchor } from './anchor';
