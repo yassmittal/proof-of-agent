@@ -1,11 +1,12 @@
 import type { Signer } from '@mysten/sui/cryptography';
 import { computeChainRoot, type RunManifest } from './manifest';
+import { DEFAULT_STORAGE_EPOCHS } from './config';
 import type { getClient } from './env';
 
 /** A Walrus-capable client (Sui gRPC client extended with `.walrus`). */
 type WalrusCapableClient = ReturnType<typeof getClient>;
 
-/** The outcome of persisting a run: everything Phase 3 needs to anchor it on Sui. */
+/** Everything needed to anchor a stored run on Sui and later verify it. */
 export interface PersistedRun {
   /** Walrus blob ID (content hash, base64url) — read the manifest back with this. */
   blobId: string;
@@ -20,9 +21,8 @@ export interface PersistedRun {
 }
 
 /**
- * Persists signed agent-run manifests to Walrus. This is the SDK's core piece:
- * callers hand it a `RunManifest` and get back everything needed to anchor and
- * later verify the run — without touching the Walrus client directly.
+ * Persists signed run manifests to Walrus. Callers hand it a `RunManifest` and
+ * get back a `PersistedRun`, without touching the Walrus client directly.
  */
 export class WalrusReceiptSink {
   private readonly client: WalrusCapableClient;
@@ -38,7 +38,7 @@ export class WalrusReceiptSink {
   }) {
     this.client = opts.client;
     this.signer = opts.signer;
-    this.epochs = opts.epochs ?? 3;
+    this.epochs = opts.epochs ?? DEFAULT_STORAGE_EPOCHS;
     this.deletable = opts.deletable ?? true;
   }
 

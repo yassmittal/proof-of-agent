@@ -1,4 +1,5 @@
 import { getClient, getKeypair } from './env';
+import { explorer } from './config';
 import { verifyRunManifest } from './manifest';
 import { WalrusReceiptSink } from './sink';
 import { simulateAgentRun } from './agent';
@@ -26,8 +27,8 @@ async function main() {
   for (const c of result.checks) {
     console.log(`  [${c.ok ? 'PASS' : 'FAIL'}] ${c.name}${c.detail ? ` — ${c.detail}` : ''}`);
   }
-  console.log(`\noverall: ${result.valid ? 'VERIFIED ✓' : 'FAILED ✗'}`);
-  console.log('\nWalruscan:', `https://walruscan.com/testnet/blob/${persisted.blobId}`);
+  console.log(`\noverall: ${result.valid ? 'VERIFIED' : 'FAILED'}`);
+  console.log('\nWalruscan:', explorer.blob(persisted.blobId));
 }
 
 main().catch((e) => {

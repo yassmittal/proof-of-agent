@@ -1,14 +1,13 @@
-// Anchors a persisted agent run on Sui: it binds the receipt-chain root to the
-// exact Walrus blob (by content blob ID and Sui object ID) that stores the run
-// manifest, immutably. Anyone can later fetch the anchor by object ID, read the
-// chain root, fetch the manifest from Walrus by blob ID, and confirm the root
-// they recompute matches — without trusting the publisher.
+// Anchors a persisted agent run on Sui. It binds the receipt-chain root to the
+// exact Walrus blob that stores the run manifest, immutably. The blob's content
+// ID and Sui object ID are read directly from the on-chain Walrus `Blob` object,
+// so an anchor provably references a real Walrus blob held by the publisher.
 //
-// The contract is intentionally dependency-free: it records the Walrus blob's
-// identifiers (supplied by the caller) rather than importing the Walrus Move
-// package. Authenticity is established off-chain by the verifier, which reads the
-// content-addressed blob and the referenced Sui Blob object directly.
+// Anyone can later fetch the anchor by object ID, read the chain root, fetch the
+// manifest from Walrus by blob ID, and confirm the root they recompute matches —
+// without trusting the publisher.
 module audit_anchor::audit_anchor {
+    use walrus::blob::Blob;
     use sui::event;
 
     /// An immutable, on-chain attestation of one agent run.
@@ -20,7 +19,7 @@ module audit_anchor::audit_anchor {
         covenant_hash: vector<u8>,
         /// Head of the receipt hash chain (the value a verifier recomputes).
         chain_root: vector<u8>,
-        /// Walrus content blob ID (u256) of the run manifest.
+        /// Walrus content blob ID (u256), read from the Blob object.
         walrus_blob_id: u256,
         /// Sui object address of the on-chain Walrus Blob.
         walrus_object_id: address,
@@ -39,13 +38,13 @@ module audit_anchor::audit_anchor {
         publisher: address,
     }
 
-    /// Anchor a run: freeze an immutable attestation and emit a discovery event.
+    /// Anchor a run: reads the Walrus blob's identifiers on-chain from `blob`,
+    /// freezes an immutable attestation, and emits a discovery event.
     public fun anchor_run(
         agent_did: vector<u8>,
         covenant_hash: vector<u8>,
         chain_root: vector<u8>,
-        walrus_blob_id: u256,
-        walrus_object_id: address,
+        blob: &Blob,
         ctx: &mut TxContext,
     ) {
         let anchor = AuditAnchor {
@@ -53,8 +52,8 @@ module audit_anchor::audit_anchor {
             agent_did,
             covenant_hash,
             chain_root,
-            walrus_blob_id,
-            walrus_object_id,
+            walrus_blob_id: blob.blob_id(),
+            walrus_object_id: object::id(blob).to_address(),
             anchored_at_ms: ctx.epoch_timestamp_ms(),
             publisher: ctx.sender(),
         };

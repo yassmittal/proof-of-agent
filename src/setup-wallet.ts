@@ -1,17 +1,18 @@
-import { getClient, getKeypair, WAL_COIN_TYPE, TESTNET_WALRUS_PACKAGE_CONFIG } from './env';
+import { TESTNET_WALRUS_PACKAGE_CONFIG } from '@mysten/walrus';
 import { getFaucetHost, requestSuiFromFaucetV2 } from '@mysten/sui/faucet';
 import { coinWithBalance, Transaction } from '@mysten/sui/transactions';
 import { MIST_PER_SUI, parseStructTag } from '@mysten/sui/utils';
+import { getClient, getKeypair } from './env';
+import { WAL_COIN_TYPE } from './config';
 
-// Ensures the project wallet holds enough SUI (gas) and WAL (Walrus storage).
-// Mirrors ts-sdks/packages/walrus/examples/funded-keypair.ts.
+// Tops the project wallet up so it can pay for gas (SUI) and Walrus storage (WAL).
 async function main() {
   const client = getClient();
   const keypair = getKeypair();
   const address = keypair.toSuiAddress();
   console.log('wallet:', address);
 
-  // 1) Ensure SUI for gas (faucet only if really low; we usually pre-fund from CLI).
+  // The wallet is usually pre-funded from the CLI; only fall back to the faucet if nearly empty.
   const sui = await client.getBalance({ owner: address });
   console.log('SUI balance:', sui.balance.balance);
   if (BigInt(sui.balance.balance) < MIST_PER_SUI / 10n) {
@@ -23,7 +24,7 @@ async function main() {
     }
   }
 
-  // 2) Ensure WAL by swapping 0.5 SUI -> WAL via the wal_exchange contract.
+  // Swap 0.5 SUI for WAL through the wal_exchange contract when WAL runs low.
   const wal = await client.getBalance({ owner: address, coinType: WAL_COIN_TYPE });
   console.log('WAL balance:', wal.balance.balance);
   if (Number(wal.balance.balance) < Number(MIST_PER_SUI) / 2) {

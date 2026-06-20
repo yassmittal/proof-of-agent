@@ -57,8 +57,9 @@ export async function anchorRun(opts: {
       tx.pure.vector('u8', Array.from(new TextEncoder().encode(manifest.agent.did))),
       tx.pure.vector('u8', Array.from(fromHex(manifest.covenant.id))),
       tx.pure.vector('u8', Array.from(fromHex(persisted.chainRoot))),
-      tx.pure.u256(BigInt(persisted.blobIdU256)),
-      tx.pure.address(persisted.suiObjectId),
+      // The real on-chain Walrus Blob object; the contract reads its blob_id and
+      // object id directly, proving a genuine blob is referenced.
+      tx.object(persisted.suiObjectId),
     ],
   });
 

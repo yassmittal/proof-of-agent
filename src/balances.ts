@@ -1,5 +1,6 @@
-import { getClient, getKeypair, WAL_COIN_TYPE } from './env';
 import { MIST_PER_SUI } from '@mysten/sui/utils';
+import { getClient, getKeypair } from './env';
+import { WAL_COIN_TYPE } from './config';
 
 const fmt = (raw: string) => (Number(raw) / Number(MIST_PER_SUI)).toFixed(4);
 

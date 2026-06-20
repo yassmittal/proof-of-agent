@@ -1,11 +1,11 @@
 import { generateKeyPair, generateId } from '@nobulex/crypto';
 import { buildCovenant, type Issuer, type Beneficiary } from '@nobulex/core';
 import { ActionLogBuilder } from '@nobulex/action-log';
-import { buildRunManifest, type RunManifest } from './manifest';
+import { agentDid, buildRunManifest, type RunManifest } from './manifest';
 
 /**
  * Stand-in for a real agent: three governed actions producing a hash-chained log.
- * Swapping this for a real LLM agent later leaves the receipt/verify path identical.
+ * Swapping this for a real LLM agent leaves the receipt and verification path unchanged.
  */
 export async function simulateAgentRun(): Promise<RunManifest> {
   const issuerKeys = await generateKeyPair();
@@ -37,8 +37,7 @@ export async function simulateAgentRun(): Promise<RunManifest> {
     metadata: { name: 'Demo Run Policy', tags: ['demo'] },
   });
 
-  const agentDid = `did:nobulex:${agentKeys.publicKeyHex}`;
-  const log = new ActionLogBuilder(agentDid);
+  const log = new ActionLogBuilder(agentDid(agentKeys.publicKeyHex));
   log.append({ action: 'read', resource: '/data/market-prices', params: { symbol: 'SUI' }, outcome: 'success' });
   log.append({ action: 'analyze', resource: '/models/forecast', params: { horizon: '7d' }, outcome: 'success' });
   log.append({ action: 'notify', resource: '/users/owner', params: { channel: 'email' }, outcome: 'success' });

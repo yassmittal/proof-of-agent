@@ -10,14 +10,38 @@ use_environment = "testnet"
 manifest_digest = "C4FE4C91DE74CBF223B2E380AE40F592177D21870DC2D7EB6227D2D694E05363"
 deps = {}
 
+[pinned.testnet.MoveStdlib_1]
+source = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/move-stdlib", rev = "ff1fe0ec455153707136cffd0dc77dfb77ba9ad5" }
+use_environment = "testnet"
+manifest_digest = "C4FE4C91DE74CBF223B2E380AE40F592177D21870DC2D7EB6227D2D694E05363"
+deps = {}
+
 [pinned.testnet.Sui]
 source = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "718ae563a42fb4ba0d055588f81c704dcef58c25" }
 use_environment = "testnet"
 manifest_digest = "7AFB66695545775FBFBB2D3078ADFD084244D5002392E837FDE21D9EA1C6D01C"
 deps = { MoveStdlib = "MoveStdlib" }
 
+[pinned.testnet.Sui_1]
+source = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "ff1fe0ec455153707136cffd0dc77dfb77ba9ad5" }
+use_environment = "testnet"
+manifest_digest = "7AFB66695545775FBFBB2D3078ADFD084244D5002392E837FDE21D9EA1C6D01C"
+deps = { MoveStdlib = "MoveStdlib_1" }
+
 [pinned.testnet.audit_anchor]
 source = { root = true }
 use_environment = "testnet"
-manifest_digest = "5745706258F61D6CE210904B3E6AE87A73CE9D31A6F93BE4718C442529332A87"
-deps = { std = "MoveStdlib", sui = "Sui" }
+manifest_digest = "C1F3F59E3CAAC0AF9F690CDF7ADADBDEF511DE0D4CE6C5251FF5AE6AB3321E4C"
+deps = { std = "MoveStdlib", sui = "Sui", wal = "wal", walrus = "walrus" }
+
+[pinned.testnet.wal]
+source = { git = "https://github.com/MystenLabs/walrus.git", subdir = "testnet-contracts/wal", rev = "f02673fbe60df26d1aaf82acac1a19723efbfdb6" }
+use_environment = "testnet"
+manifest_digest = "8A6C95FA01C1460D03194A0A78E6CAA81EE0DE0F30A23D874B1F7167A0B83996"
+deps = { std = "MoveStdlib_1", sui = "Sui_1" }
+
+[pinned.testnet.walrus]
+source = { git = "https://github.com/MystenLabs/walrus.git", subdir = "testnet-contracts/walrus", rev = "f02673fbe60df26d1aaf82acac1a19723efbfdb6" }
+use_environment = "testnet"
+manifest_digest = "8F20CC517CE2D4AE05A373DC033276636F3E9361D63EC9AF7750793521ACA157"
+deps = { std = "MoveStdlib_1", sui = "Sui_1", wal = "wal" }

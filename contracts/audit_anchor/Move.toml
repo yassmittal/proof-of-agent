@@ -1,3 +1,14 @@
 [package]
 name = "audit_anchor"
 edition = "2024"
+
+[dependencies]
+walrus = { git = "https://github.com/MystenLabs/walrus.git", subdir = "testnet-contracts/walrus", rev = "f02673fbe60df26d1aaf82acac1a19723efbfdb6" }
+
+# The Walrus Testnet contracts don't ship a published address in their lockfile,
+# so we supply the deployed Testnet addresses here (the documented fix for deps
+# that haven't published their Published.toml). `original-id` = package where the
+# type is defined; `published-at` = on-chain location used for linkage.
+[dep-replacements.testnet]
+walrus = { git = "https://github.com/MystenLabs/walrus.git", subdir = "testnet-contracts/walrus", rev = "f02673fbe60df26d1aaf82acac1a19723efbfdb6", original-id = "0xd84704c17fc870b8764832c535aa6b11f21a95cd6f5bb38a9b07d2cf42220c66", published-at = "0xd84704c17fc870b8764832c535aa6b11f21a95cd6f5bb38a9b07d2cf42220c66" }
+wal = { git = "https://github.com/MystenLabs/walrus.git", subdir = "testnet-contracts/wal", rev = "f02673fbe60df26d1aaf82acac1a19723efbfdb6", original-id = "0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a", published-at = "0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a" }

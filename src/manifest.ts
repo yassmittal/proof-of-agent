@@ -2,10 +2,15 @@ import { verifyIntegrity, computeEntryHash, type ActionLog } from '@nobulex/acti
 import { signString, verify, toHex, fromHex, type KeyPair } from '@nobulex/crypto';
 import { computeId, type CovenantDocument } from '@nobulex/core';
 
+/** An agent's DID, derived from its ed25519 public key. */
+export function agentDid(publicKeyHex: string): string {
+  return `did:nobulex:${publicKeyHex}`;
+}
+
 /**
- * Independently re-derive the head of the hash chain purely from action content,
- * ignoring the hashes stored in the log. This is the value a verifier recomputes
- * and compares against the root anchored on Sui — so it must be deterministic.
+ * Re-derive the head of the hash chain from the action content alone, ignoring
+ * the hashes already stored in the log. A verifier recomputes this and compares
+ * it against the root anchored on Sui, so it must be deterministic.
  */
 export function computeChainRoot(log: ActionLog): string {
   let previousHash: string | null = null;
@@ -76,7 +81,7 @@ export async function buildRunManifest(params: {
     runId: params.runId,
     createdAt: new Date().toISOString(),
     agent: {
-      did: `did:nobulex:${params.agentKeys.publicKeyHex}`,
+      did: agentDid(params.agentKeys.publicKeyHex),
       publicKey: params.agentKeys.publicKeyHex,
     },
     covenant: {
@@ -101,13 +106,12 @@ export interface ManifestVerification {
 }
 
 /**
- * Re-verify a run manifest using only its own contents — no trust in whoever
- * produced it. This is the heart of the project and is reused by the verifier.
+ * Re-verify a run manifest using only its own contents, trusting nothing about
+ * where it came from.
  */
 export async function verifyRunManifest(m: RunManifest): Promise<ManifestVerification> {
   const checks: ManifestCheck[] = [];
 
-  // 1. The action log is an intact hash chain.
   const integrity = verifyIntegrity(m.actionLog);
   checks.push({
     name: 'actionLog.integrity',
@@ -115,8 +119,7 @@ export async function verifyRunManifest(m: RunManifest): Promise<ManifestVerific
     detail: integrity.errors.join('; ') || undefined,
   });
 
-  // 2. The signed head hash equals an independently recomputed chain root.
-  //    (Recomputing from action content alone catches a tampered headHash field.)
+  // Recomputing the root from action content alone catches a tampered headHash.
   const recomputedRoot = computeChainRoot(m.actionLog);
   const headMatches = m.signature.headHash === recomputedRoot;
   checks.push({
@@ -125,8 +128,8 @@ export async function verifyRunManifest(m: RunManifest): Promise<ManifestVerific
     detail: headMatches ? undefined : `expected ${recomputedRoot}`,
   });
 
-  // 3. The signature over the head hash verifies against the agent's public key.
   let sigOk = false;
+  let sigError: string | undefined;
   try {
     sigOk = await verify(
       new TextEncoder().encode(m.signature.headHash),
@@ -134,16 +137,15 @@ export async function verifyRunManifest(m: RunManifest): Promise<ManifestVerific
       fromHex(m.agent.publicKey),
     );
   } catch (e) {
-    checks.push({ name: 'signature.valid', ok: false, detail: String(e) });
+    sigError = String(e);
   }
-  if (checks[checks.length - 1]?.name !== 'signature.valid') {
-    checks.push({ name: 'signature.valid', ok: sigOk });
-  }
+  checks.push({ name: 'signature.valid', ok: sigOk, detail: sigError });
 
-  // 4. The covenant id is consistent with its document (tamper check).
-  //    Full issuer-signature + action compliance verification is done by the verifier.
-  const covenantIdOk = computeId(m.covenant.document) === m.covenant.id;
-  checks.push({ name: 'covenant.id matches document', ok: covenantIdOk });
+  // Consistency check only; issuer-signature and action compliance are checked by the verifier.
+  checks.push({
+    name: 'covenant.id matches document',
+    ok: computeId(m.covenant.document) === m.covenant.id,
+  });
 
   return { valid: checks.every((c) => c.ok), checks };
 }

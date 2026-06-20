@@ -1,5 +1,6 @@
 import { normalizeSuiAddress } from '@mysten/sui/utils';
 import { getClient, getKeypair, getPackageId } from './env';
+import { explorer } from './config';
 import { WalrusReceiptSink } from './sink';
 import { simulateAgentRun } from './agent';
 import { anchorRun, readAnchor } from './anchor';
@@ -35,8 +36,8 @@ async function main() {
   ] as const;
 
   for (const [name, ok] of checks) console.log(`  [${ok ? 'PASS' : 'FAIL'}] ${name}`);
-  console.log(`\noverall: ${checks.every(([, ok]) => ok) ? 'ANCHORED + VERIFIED ✓' : 'FAILED ✗'}`);
-  console.log('\nSuiVision:', `https://testnet.suivision.xyz/object/${anchor.anchorObjectId}`);
+  console.log(`\noverall: ${checks.every(([, ok]) => ok) ? 'ANCHORED + VERIFIED' : 'FAILED'}`);
+  console.log('\nSuiVision:', explorer.object(anchor.anchorObjectId));
 }
 
 main().catch((e) => {

@@ -1,0 +1,26 @@
+// Network endpoints, on-chain addresses, and storage defaults for Sui + Walrus Testnet.
+
+export const NETWORK = 'testnet' as const;
+
+export const SUI_FULLNODE_URL = 'https://fullnode.testnet.sui.io:443';
+
+// Direct-to-node Walrus writes are unreliable on testnet; route them through the relay.
+export const WALRUS_UPLOAD_RELAY_URL = 'https://upload-relay.testnet.walrus.space';
+
+// WAL token, which pays for Walrus storage.
+export const WAL_COIN_TYPE =
+  '0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a::wal::WAL';
+
+// Walrus nodes can be slow to respond, so we raise client timeouts well above the default.
+export const WALRUS_TIMEOUT_MS = 60_000;
+
+// Upper bound on the SUI tip (in MIST) paid to the upload relay per write.
+export const UPLOAD_RELAY_MAX_TIP = 1_000;
+
+// Epochs a stored blob stays alive unless overridden.
+export const DEFAULT_STORAGE_EPOCHS = 3;
+
+export const explorer = {
+  blob: (blobId: string) => `https://walruscan.com/testnet/blob/${blobId}`,
+  object: (objectId: string) => `https://testnet.suivision.xyz/object/${objectId}`,
+};
