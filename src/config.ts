@@ -11,6 +11,11 @@ export const WALRUS_UPLOAD_RELAY_URL = 'https://upload-relay.testnet.walrus.spac
 export const WAL_COIN_TYPE =
   '0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a::wal::WAL';
 
+// Deployed Walrus package; a genuine blob object has type `${WALRUS_PACKAGE_ID}::blob::Blob`.
+export const WALRUS_PACKAGE_ID =
+  '0xd84704c17fc870b8764832c535aa6b11f21a95cd6f5bb38a9b07d2cf42220c66';
+export const WALRUS_BLOB_TYPE = `${WALRUS_PACKAGE_ID}::blob::Blob`;
+
 // Walrus nodes can be slow to respond, so we raise client timeouts well above the default.
 export const WALRUS_TIMEOUT_MS = 60_000;
 

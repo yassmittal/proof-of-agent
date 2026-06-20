@@ -9,3 +9,4 @@ export {
 } from './manifest';
 export { WalrusReceiptSink, type PersistedRun } from './sink';
 export { anchorRun, readAnchor, type AnchorResult, type OnChainAnchor } from './anchor';
+export { verifyAnchor, type AnchorVerification } from './verify';

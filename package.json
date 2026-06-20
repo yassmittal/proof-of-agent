@@ -10,6 +10,7 @@
     "balances": "bun src/balances.ts",
     "record-run": "bun src/record-run.ts",
     "anchor": "bun src/anchor-run.ts",
+    "verify": "bun src/verify-run.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
