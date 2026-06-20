@@ -6,3 +6,4 @@ dist/
 build/
 contracts/**/build/
 verifier/dist/
+private.md
