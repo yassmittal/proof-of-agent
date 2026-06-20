@@ -25,6 +25,9 @@ export const UPLOAD_RELAY_MAX_TIP = 1_000;
 // Epochs a stored blob stays alive unless overridden.
 export const DEFAULT_STORAGE_EPOCHS = 3;
 
+// Claude model that drives the live agent (src/agent-claude.ts).
+export const AGENT_MODEL = 'claude-opus-4-8';
+
 export const explorer = {
   blob: (blobId: string) => `https://walruscan.com/testnet/blob/${blobId}`,
   object: (objectId: string) => `https://testnet.suivision.xyz/object/${objectId}`,

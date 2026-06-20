@@ -5,6 +5,7 @@
     "": {
       "name": "proof-of-agent",
       "dependencies": {
+        "@anthropic-ai/sdk": "^0.105.0",
         "@mysten/sui": "^2.19.0",
         "@mysten/walrus": "^1.2.1",
         "@nobulex/action-log": "^0.2.0",
@@ -24,6 +25,10 @@
     "@0no-co/graphql.web": ["@0no-co/graphql.web@1.3.2", "", { "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0" }, "optionalPeers": ["graphql"] }, "sha512-Q1+pRlLhE31GOY/2c9BAEnFTNxO7Awtc6fhhEDlxyCBQ2N0IhD32cPVvPChrK9mwBNSgRdW/sF1kd2e0ojHj1Q=="],
 
     "@0no-co/graphqlsp": ["@0no-co/graphqlsp@1.17.3", "", { "dependencies": { "@gql.tada/internal": "^1.2.0", "graphql": "^15.5.0 || ^16.0.0 || ^17.0.0" }, "peerDependencies": { "typescript": "^5.0.0 || ^6.0.0" } }, "sha512-4PPvxDPmbntddpgMyA3VId5/E9YGdRuuS/mW+THOvtTx/C79Pf+lN28LkNNACJrF9L7YACiAJelyOkC6LqUzvw=="],
+
+    "@anthropic-ai/sdk": ["@anthropic-ai/sdk@0.105.0", "", { "dependencies": { "json-schema-to-ts": "^3.1.1", "standardwebhooks": "^1.0.0" }, "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" }, "optionalPeers": ["zod"], "bin": { "anthropic-ai-sdk": "bin/cli" } }, "sha512-sDyu+aM9cE6uZE+HgRjjHRb+qqb87GHZOx+8bE0YlWetdL1YcVLxn8h9ltxGOflyChTe6PMEo50kMQV4cw0hfg=="],
+
+    "@babel/runtime": ["@babel/runtime@7.29.7", "", {}, "sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw=="],
 
     "@gql.tada/cli-utils": ["@gql.tada/cli-utils@1.9.2", "", { "dependencies": { "@0no-co/graphqlsp": "^1.17.3", "@gql.tada/internal": "1.2.1", "graphql": "^15.5.0 || ^16.0.0 || ^17.0.0" }, "peerDependencies": { "@gql.tada/svelte-support": "1.0.3", "@gql.tada/vue-support": "1.0.3", "typescript": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["@gql.tada/svelte-support", "@gql.tada/vue-support"] }, "sha512-cVNs4v8ewLRYJfyAsaHbiAmd5Hm+zXEMvMhBksH58ZU87d6f8crsp2CQG6QtIqnJJw1q0CBWfWTZepGWNcL3QA=="],
 
@@ -89,6 +94,8 @@
 
     "@scure/bip39": ["@scure/bip39@2.2.0", "", { "dependencies": { "@noble/hashes": "2.2.0", "@scure/base": "2.2.0" } }, "sha512-T/Bj/YvYMNkIPq6EENO6/rcs2e7qTNuyoUXf0KBFDmp0ZDu0H2X4Lq6yC3i0c8PcWkov5EbW+yQZZbdMmk154A=="],
 
+    "@stablelib/base64": ["@stablelib/base64@1.0.1", "", {}, "sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ=="],
+
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
     "@types/node": ["@types/node@26.0.0", "", { "dependencies": { "undici-types": "~8.3.0" } }, "sha512-vf2YFi1iY9lHGwNJMs01biZFbKJkrZR1T6/MlzjhJLPdntOHLhTrDSnSVcdtvjihi4VQNlrFRIxLsDBlQpAipA=="],
@@ -99,11 +106,19 @@
 
     "dotenv": ["dotenv@16.6.1", "", {}, "sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow=="],
 
+    "fast-sha256": ["fast-sha256@1.3.0", "", {}, "sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ=="],
+
     "gql.tada": ["gql.tada@1.11.2", "", { "dependencies": { "@0no-co/graphql.web": "^1.3.2", "@0no-co/graphqlsp": "^1.17.3", "@gql.tada/cli-utils": "1.9.2", "@gql.tada/internal": "1.2.1" }, "peerDependencies": { "typescript": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "bin": { "gql-tada": "./bin/cli.js", "gql.tada": "./bin/cli.js" } }, "sha512-oBr7ShA5/TmcwOO7BZgN1SynX2rBU+/ltysB0zXc+NCBF+9YOg6MRzJcTfLjIqDKdcE3LGxpOl0l9hBbxmyzmA=="],
 
     "graphql": ["graphql@16.14.2", "", {}, "sha512-Chq1s4CY7jmh8gO2qvLIJyfCDIN+EHLFW/9iShnp1z8FjBQMoodWP1kDC36VAMXXIvAjj4ARa7ntfAV2BrjsbA=="],
 
+    "json-schema-to-ts": ["json-schema-to-ts@3.1.1", "", { "dependencies": { "@babel/runtime": "^7.18.3", "ts-algebra": "^2.0.0" } }, "sha512-+DWg8jCJG2TEnpy7kOm/7/AxaYoaRbjVB4LFZLySZlWn8exGs3A4OLJR966cVvU26N7X9TWxl+Jsw7dzAqKT6g=="],
+
     "poseidon-lite": ["poseidon-lite@0.2.1", "", {}, "sha512-xIr+G6HeYfOhCuswdqcFpSX47SPhm0EpisWJ6h7fHlWwaVIvH3dLnejpatrtw6Xc6HaLrpq05y7VRfvDmDGIog=="],
+
+    "standardwebhooks": ["standardwebhooks@1.0.0", "", { "dependencies": { "@stablelib/base64": "^1.0.0", "fast-sha256": "^1.3.0" } }, "sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg=="],
+
+    "ts-algebra": ["ts-algebra@2.0.0", "", {}, "sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw=="],
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 

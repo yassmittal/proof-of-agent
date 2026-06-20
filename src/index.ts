@@ -10,3 +10,5 @@ export {
 export { WalrusReceiptSink, type PersistedRun } from './sink';
 export { anchorRun, readAnchor, type AnchorResult, type OnChainAnchor } from './anchor';
 export { verifyAnchor, type AnchorVerification } from './verify';
+export { simulateAgentRun } from './agent';
+export { runClaudeAgent } from './agent-claude';

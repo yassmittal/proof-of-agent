@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
     "@mysten/sui": "^2.19.0",
     "@mysten/walrus": "^1.2.1",
     "@nobulex/action-log": "^0.2.0",
