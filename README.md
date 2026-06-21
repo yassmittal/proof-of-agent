@@ -126,7 +126,11 @@ cd web && bun run dev     # http://localhost:3000 — paste an anchor object ID,
    timeline), and **re-fetches the cited input blob** to confirm the agent used exactly that data —
    ending in a green **Verified** (12/12). Nothing private is needed.
 4. **Tamper.** Click **Tamper a receipt** — one byte is flipped and verification fails at the exact
-   broken step, proving the chain is real, not decorative.
+   broken step (`actionLog.integrity` + the recomputed chain root), proving the chain is real, not
+   decorative. Note that *"manifest chain root matches anchored chain_root"* still passes — the
+   committed head on Sui wasn't touched; independent recomputation of the chain from the altered data
+   simply disagrees with it. You can't edit the data and slip through, because the math is redone, not
+   trusted.
 
 ## Deploy the verifier (Vercel)
 

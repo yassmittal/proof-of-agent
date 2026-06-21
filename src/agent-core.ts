@@ -19,8 +19,9 @@ export const POLICY = [
 export const SYSTEM_PROMPT =
   'You are a portfolio risk agent. Work through the user request step by step using the ' +
   'available tools, then notify_owner exactly once with a concise recommendation. Do not ' +
-  'invent prices — always read them with fetch_market_data first. If a tool is blocked by ' +
-  'policy, note it and continue with what you are allowed to do.';
+  'invent prices — always read them with fetch_market_data first, and quote the exact price ' +
+  'and volatility the tool returned verbatim (do not rescale them to match real-world values). ' +
+  'If a tool is blocked by policy, note it and continue with what you are allowed to do.';
 
 export const DEFAULT_TASK =
   'Check the current market data for SUI and assess its downside risk. For a complete ' +

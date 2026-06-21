@@ -20,6 +20,13 @@ export async function POST(request: Request) {
     const report = await verifyAnchor(createReadClient(), anchorObjectId.trim(), { tamper });
     return Response.json(report);
   } catch (e) {
-    return Response.json({ error: String(e) }, { status: 500 });
+    const msg = String(e);
+    if (/fetch failed|INTERNAL|UNAVAILABLE|ECONNREFUSED|timeout/i.test(msg)) {
+      return Response.json(
+        { error: "Sui RPC node is temporarily unavailable — please retry in a moment." },
+        { status: 503 },
+      );
+    }
+    return Response.json({ error: msg }, { status: 500 });
   }
 }

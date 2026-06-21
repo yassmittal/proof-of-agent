@@ -6,6 +6,18 @@ import { verifyRunManifest, type ManifestCheck, type RunManifest } from './manif
 
 type Client = WalrusClient;
 
+type MarketFigures = { asset?: string; price?: number; volatility?: number };
+
+/** True when a cited Walrus blob's data equals the figures the agent recorded in its log. */
+export function citedDataMatches(blob: MarketFigures, recorded: MarketFigures | undefined): boolean {
+  return (
+    !!recorded &&
+    blob.price === recorded.price &&
+    blob.volatility === recorded.volatility &&
+    String(blob.asset).toLowerCase() === String(recorded.asset).toLowerCase()
+  );
+}
+
 export interface AnchorVerification {
   valid: boolean;
   anchorObjectId: string;
@@ -91,21 +103,11 @@ export async function verifyAnchor(
     try {
       for (const citedId of manifest.citedInputBlobIds) {
         const raw = new Uint8Array(await client.walrus.readBlob({ blobId: citedId }));
-        const data = JSON.parse(new TextDecoder().decode(raw)) as {
-          asset?: string;
-          price?: number;
-          volatility?: number;
-        };
+        const data = JSON.parse(new TextDecoder().decode(raw)) as MarketFigures;
         const entry = manifest.actionLog.entries.find(
           (e) => (e.params as { blobId?: string })?.blobId === citedId,
         );
-        const p = entry?.params as { asset?: string; price?: number; volatility?: number } | undefined;
-        if (
-          !p ||
-          data.price !== p.price ||
-          data.volatility !== p.volatility ||
-          String(data.asset).toLowerCase() !== String(p.asset).toLowerCase()
-        ) {
+        if (!citedDataMatches(data, entry?.params as MarketFigures | undefined)) {
           ok = false;
           detail = `cited blob ${citedId} does not match the recorded inputs`;
           break;
