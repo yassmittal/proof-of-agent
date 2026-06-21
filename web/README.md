@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# web
 
-## Getting Started
+The public verifier — a small Next.js app. You paste a Sui anchor object ID, it checks the run,
+and shows you a green-or-red breakdown. No wallet, no login, nothing private; it only reads public
+data.
 
-First, run the development server:
+## How it's put together
+
+The actual verification doesn't run in your browser. The page sends the object ID to a server
+route (`app/api/verify`), which calls the same `verifyAnchor` from the SDK in `../src` that the CLI
+uses, and sends back the list of checks. The browser just draws the result.
+
+Doing it server-side was a deliberate choice: the Walrus SDK ships a WebAssembly file that breaks
+when bundled for the browser, so it stays on the server. That's why `next.config.ts` marks the
+Mysten packages as external and points at the sibling `../src` directory.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+There are two buttons to try without an ID: **Verify an example run** (an already-anchored run,
+turns green) and **Tamper a receipt** (flips a byte server-side so you can watch it fail at the
+exact broken step).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+It's read-only and needs no environment variables, which makes it the easiest thing to host.
+Deploy on Vercel with the root directory set to `proof-of-agent/web`. If the public Sui RPC ever
+has a bad day, set `SUI_RPC_URL` to another testnet gRPC endpoint — both the app and the CLI pick
+it up.
 
-## Learn More
+## Layout
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/` — the page, the API route, layout and styles.
+- `public/` — leftover default Next.js icons; not really used.
+- `next.config.ts` / `tsconfig.json` — the config that lets the app reach `../src` and keeps the
+  Walrus SDK external.
