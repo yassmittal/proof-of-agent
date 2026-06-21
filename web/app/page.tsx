@@ -5,16 +5,18 @@ import { explorer } from "@sdk/config";
 import styles from "./page.module.css";
 
 const EXAMPLE_ANCHOR =
-  "0x53e2001ef0f2d5507f4f1a6a97cd4162f34b54427047aca47f485dd3ccbe0790";
+  "0x33af33271752eb7c7a00478c51a9b44ac1851fde3075947c81434baa8cd2deb0";
 
 type Check = { name: string; ok: boolean; detail?: string };
+
+type Entry = { action: string; resource: string; outcome: string };
 
 type Report = {
   valid: boolean;
   anchorObjectId: string;
   blobId: string;
   anchor: { agentDid: string; publisher: string };
-  manifest?: { actionLog: { entries: { action: string }[] } };
+  manifest?: { actionLog: { entries: Entry[] }; citedInputBlobIds?: string[] };
   checks: Check[];
 };
 
@@ -24,7 +26,7 @@ export default function Home() {
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function verify(anchorObjectId: string) {
+  async function verify(anchorObjectId: string, tamper = false) {
     setLoading(true);
     setReport(null);
     setError(null);
@@ -32,7 +34,7 @@ export default function Home() {
       const res = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ anchorObjectId }),
+        body: JSON.stringify({ anchorObjectId, tamper }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "verification failed");
@@ -44,7 +46,9 @@ export default function Home() {
     }
   }
 
-  const actions = report?.manifest?.actionLog.entries.map((e) => e.action).join(" → ");
+  const entries = report?.manifest?.actionLog.entries ?? [];
+  const citedInputs = report?.manifest?.citedInputBlobIds ?? [];
+  const blockedCount = entries.filter((e) => e.outcome === "blocked").length;
 
   return (
     <main className={styles.page}>
@@ -82,7 +86,17 @@ export default function Home() {
             verify(EXAMPLE_ANCHOR);
           }}
         >
-          Try an example run
+          Verify an example run
+        </button>{" "}
+        ·{" "}
+        <button
+          type="button"
+          onClick={() => {
+            setId(EXAMPLE_ANCHOR);
+            verify(EXAMPLE_ANCHOR, true);
+          }}
+        >
+          Tamper a receipt
         </button>
       </p>
 
@@ -99,17 +113,55 @@ export default function Home() {
           <dl className={styles.summary}>
             <dt>Agent</dt>
             <dd className="mono">{report.anchor.agentDid}</dd>
-            {actions && (
-              <>
-                <dt>Actions</dt>
-                <dd>{actions}</dd>
-              </>
-            )}
             <dt>Blob</dt>
             <dd className="mono">{report.blobId}</dd>
             <dt>Publisher</dt>
             <dd className="mono">{report.anchor.publisher}</dd>
           </dl>
+
+          {entries.length > 0 && (
+            <div className={styles.actions}>
+              {entries.map((e, i) => (
+                <div className={styles.action} key={i}>
+                  <span
+                    className={`${styles.outcome} ${
+                      e.outcome === "blocked" ? styles.outcomeBlocked : styles.outcomeOk
+                    }`}
+                  >
+                    {e.outcome === "blocked" ? "blocked" : e.outcome}
+                  </span>
+                  <span className={styles.actionName}>
+                    {e.action} <span className="mono">{e.resource}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {blockedCount > 0 && (
+            <p className={styles.note}>
+              {blockedCount} action{blockedCount > 1 ? "s were" : " was"} blocked by the covenant —
+              the denial is recorded as a receipt, and the verifier re-ran the policy to confirm it.
+              That&apos;s the guardrail working, so verification stays green.
+            </p>
+          )}
+
+          {citedInputs.length > 0 && (
+            <div className={styles.cited}>
+              <span className={styles.citedLabel}>Inputs re-fetched from Walrus</span>
+              {citedInputs.map((id) => (
+                <a
+                  key={id}
+                  className="mono"
+                  href={explorer.blob(id)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {id} ↗
+                </a>
+              ))}
+            </div>
+          )}
 
           <div className={styles.checks}>
             {report.checks.map((c) => (

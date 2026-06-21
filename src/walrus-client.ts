@@ -11,8 +11,7 @@ import {
 /** A Sui gRPC client extended with the Walrus client (`.walrus.*`). */
 export type WalrusClient = ReturnType<typeof createReadClient>;
 
-/** Read-only client — all that's needed to fetch and verify (no upload relay). */
-export function createReadClient(rpcUrl: string = SUI_FULLNODE_URL) {
+export function createReadClient(rpcUrl: string = process.env.SUI_RPC_URL || SUI_FULLNODE_URL) {
   return new SuiGrpcClient({ network: NETWORK, baseUrl: rpcUrl }).$extend(
     walrus({ storageNodeClientOptions: { timeout: WALRUS_TIMEOUT_MS } }),
   );

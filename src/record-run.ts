@@ -2,18 +2,31 @@ import { getClient, getKeypair } from './env';
 import { explorer } from './config';
 import { verifyRunManifest } from './manifest';
 import { WalrusReceiptSink } from './sink';
-import { simulateAgentRun } from './agent';
+import { seedMarketDatasets } from './datasets';
+import { runAgent } from './run-agent';
 
 async function main() {
-  console.log('--- simulating agent run ---');
-  const manifest = await simulateAgentRun();
+  const client = getClient();
+  const signer = getKeypair();
+
+  // Store the data the agent will consume as its own Walrus blob(s) first, so the run's
+  // inputs are content-addressed and the agent can cite them. Skipped gracefully if it fails.
+  let datasets;
+  try {
+    datasets = await seedMarketDatasets(client, signer, ['SUI']);
+  } catch (e) {
+    console.warn('cited-input seeding skipped:', String(e));
+  }
+
+  const manifest = await runAgent(undefined, datasets);
   console.log('runId    :', manifest.runId);
   console.log('agent did:', manifest.agent.did);
   console.log('headHash :', manifest.signature.headHash);
   console.log('actions  :', manifest.actionLog.entries.map((e) => e.action).join(' -> '));
+  console.log('cited    :', manifest.citedInputBlobIds.join(', ') || '(none)');
 
   console.log('\n--- storing manifest on Walrus ---');
-  const sink = new WalrusReceiptSink({ client: getClient(), signer: getKeypair() });
+  const sink = new WalrusReceiptSink({ client, signer });
   const persisted = await sink.persistRun(manifest);
   console.log('blobId      :', persisted.blobId);
   console.log('suiObjectId :', persisted.suiObjectId);

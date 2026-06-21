@@ -6,6 +6,18 @@ import { verifyRunManifest, type ManifestCheck, type RunManifest } from './manif
 
 type Client = WalrusClient;
 
+type MarketFigures = { asset?: string; price?: number; volatility?: number };
+
+/** True when a cited Walrus blob's data equals the figures the agent recorded in its log. */
+export function citedDataMatches(blob: MarketFigures, recorded: MarketFigures | undefined): boolean {
+  return (
+    !!recorded &&
+    blob.price === recorded.price &&
+    blob.volatility === recorded.volatility &&
+    String(blob.asset).toLowerCase() === String(recorded.asset).toLowerCase()
+  );
+}
+
 export interface AnchorVerification {
   valid: boolean;
   anchorObjectId: string;
@@ -24,6 +36,7 @@ export interface AnchorVerification {
 export async function verifyAnchor(
   client: Client,
   anchorObjectId: string,
+  opts?: { tamper?: boolean },
 ): Promise<AnchorVerification> {
   const checks: ManifestCheck[] = [];
 
@@ -57,6 +70,14 @@ export async function verifyAnchor(
     return { valid: false, anchorObjectId, blobId, anchor, checks };
   }
   checks.push({ name: 'manifest readable from Walrus', ok: true });
+
+  // Demo: flip one byte of a receipt after reading it. The on-chain anchor is untouched,
+  // so the chain math no longer adds up and verification fails at the exact broken step.
+  if (opts?.tamper && manifest.actionLog.entries.length > 0) {
+    const entry = manifest.actionLog.entries[0] as { resource: string };
+    entry.resource = `${entry.resource}#tampered`;
+  }
+
   checks.push(...(await verifyRunManifest(manifest)).checks);
 
   // The manifest the publisher stored is the one they committed to on-chain.
@@ -72,6 +93,36 @@ export async function verifyAnchor(
     name: 'manifest covenant matches anchored covenant_hash',
     ok: manifest.covenant.id === anchor.covenantHash,
   });
+
+  // Provenance: each input the agent consumed is itself a Walrus blob. Re-fetch every
+  // cited blob and confirm the figures the agent logged match the blob's contents —
+  // proving the agent acted on exactly this data, straight from Walrus.
+  if (manifest.citedInputBlobIds.length > 0) {
+    let ok = true;
+    let detail: string | undefined;
+    try {
+      for (const citedId of manifest.citedInputBlobIds) {
+        const raw = new Uint8Array(await client.walrus.readBlob({ blobId: citedId }));
+        const data = JSON.parse(new TextDecoder().decode(raw)) as MarketFigures;
+        const entry = manifest.actionLog.entries.find(
+          (e) => (e.params as { blobId?: string })?.blobId === citedId,
+        );
+        if (!citedDataMatches(data, entry?.params as MarketFigures | undefined)) {
+          ok = false;
+          detail = `cited blob ${citedId} does not match the recorded inputs`;
+          break;
+        }
+      }
+    } catch (e) {
+      ok = false;
+      detail = String(e);
+    }
+    checks.push({
+      name: `cited input blobs match recorded data (${manifest.citedInputBlobIds.length})`,
+      ok,
+      detail,
+    });
+  }
 
   return { valid: checks.every((c) => c.ok), anchorObjectId, blobId, anchor, manifest, checks };
 }
