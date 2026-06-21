@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Verifiable audit layer for AI agents: Nobulex-signed receipts persisted on Walrus and anchored on Sui.",
+  "workspaces": ["web"],
   "scripts": {
     "keygen": "bun src/keygen.ts",
     "agent-keys": "bun src/agent-keys.ts",
@@ -20,6 +21,7 @@
     "@mysten/sui": "^2.19.0",
     "@mysten/walrus": "^1.2.1",
     "@nobulex/action-log": "^0.2.0",
+    "@nobulex/ccl": "^0.2.0",
     "@nobulex/core": "^0.2.1",
     "@nobulex/crypto": "^0.2.0",
     "@nobulex/sdk": "^0.2.2",
