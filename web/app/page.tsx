@@ -52,7 +52,11 @@ export default function Home() {
 
   return (
     <main className={styles.page}>
-      <h1 className={styles.title}>Proof-of-Agent</h1>
+      <div className={styles.header}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={styles.logo} src="/logo-transparent.png" alt="Proof-of-Agent" />
+        <h1 className={styles.title}>Proof-of-Agent</h1>
+      </div>
       <p className={styles.tagline}>
         Verify an AI agent&apos;s entire run from a single Sui object ID — reconstructed
         from public data alone. Reads the on-chain anchor, confirms the genuine Walrus
@@ -104,11 +108,15 @@ export default function Home() {
 
       {report && (
         <section className={styles.result}>
-          <span
-            className={`${styles.badge} ${report.valid ? styles.badgePass : styles.badgeFail}`}
-          >
-            {report.valid ? "Verified" : "Verification failed"}
-          </span>
+          <div className={styles.resultHead}>
+            <span
+              className={`${styles.badge} ${report.valid ? styles.badgePass : styles.badgeFail}`}
+            >
+              {report.valid ? "Verified" : "Verification failed"}
+            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className={styles.resultLogo} src="/logo-transparent.png" alt="Proof-of-Agent" />
+          </div>
 
           <dl className={styles.summary}>
             <dt>Agent</dt>

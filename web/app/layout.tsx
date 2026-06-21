@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Proof-of-Agent — Verifier",
   description: "Verify an AI agent's run from a single Sui object ID.",
+  openGraph: {
+    title: "Proof-of-Agent — Verifier",
+    description: "Verify an AI agent's run from a single Sui object ID.",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

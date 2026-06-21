@@ -1,4 +1,8 @@
-# Proof-of-Agent
+<p align="center">
+  <img src="web/public/logo-transparent.png" alt="Proof-of-Agent" width="110" />
+</p>
+
+<h1 align="center">Proof-of-Agent</h1>
 
 A way to make an AI agent's actions provable. You wrap an agent, and every move it makes becomes a
 signed, hash-chained receipt. The whole run gets stored on [Walrus](https://www.walrus.xyz/) and

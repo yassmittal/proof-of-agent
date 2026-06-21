@@ -4,6 +4,18 @@
   padding: 64px 24px 96px;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
 .title {
   font-size: 28px;
   font-weight: 650;
@@ -70,6 +82,20 @@
 
 .result {
   margin-top: 36px;
+}
+
+.resultHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resultLogo {
+  width: 26px;
+  height: 26px;
+  opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .badge {
