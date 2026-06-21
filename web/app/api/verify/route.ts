@@ -5,8 +5,9 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   let anchorObjectId: string;
+  let tamper = false;
   try {
-    ({ anchorObjectId } = await request.json());
+    ({ anchorObjectId, tamper = false } = await request.json());
   } catch {
     return Response.json({ error: "invalid request body" }, { status: 400 });
   }
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const report = await verifyAnchor(createReadClient(), anchorObjectId.trim());
+    const report = await verifyAnchor(createReadClient(), anchorObjectId.trim(), { tamper });
     return Response.json(report);
   } catch (e) {
     return Response.json({ error: String(e) }, { status: 500 });

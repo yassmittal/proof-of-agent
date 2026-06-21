@@ -6,6 +6,7 @@
   "description": "Verifiable audit layer for AI agents: Nobulex-signed receipts persisted on Walrus and anchored on Sui.",
   "scripts": {
     "keygen": "bun src/keygen.ts",
+    "agent-keys": "bun src/agent-keys.ts",
     "setup": "bun src/setup-wallet.ts",
     "balances": "bun src/balances.ts",
     "record-run": "bun src/record-run.ts",

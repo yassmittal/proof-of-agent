@@ -5,6 +5,10 @@ A verifiable audit layer for AI agents. Wrap any agent and every action becomes 
 [Walrus](https://www.walrus.xyz/) and anchored on [Sui](https://sui.io). Anyone can
 **independently replay and verify** an agent's entire history from a single Sui object ID.
 
+> From one Sui object ID, anyone can re-prove **what an AI agent did**, that it **stayed inside its
+> policy**, and that it **used exactly the data it claims** — using only public data and the immutable
+> Walrus blob the contract bound on-chain.
+
 ## Why
 
 Nobulex makes agent behavior cryptographically provable — Ed25519 receipts, hash-chained into a
@@ -19,10 +23,13 @@ finality (Sui).
 ## How it works
 
 ```
-Agent action ─► Nobulex hash-chained receipt ─► run manifest ─► Walrus blob ─► Sui anchor
-                                                                                   │
-                          anyone, from just a Sui object ID ◄──────────────────────┘
-                          re-verifies signatures + chain + covenant + cited data
+input data ─► Walrus blob (cited)
+                   │
+                   ▼
+Agent action ─► covenant check ─► Nobulex hash-chained receipt ─► run manifest ─► Walrus blob ─► Sui anchor
+                                                                                                     │
+                            anyone, from just a Sui object ID ◄──────────────────────────────────────┘
+              re-verifies: signatures + hash chain + covenant compliance + cited input blobs
 ```
 
 ## Components
@@ -49,9 +56,28 @@ deny  notify on '/public/**'
 
 Each tool the model invokes is mapped to a governed `(action, resource)` pair, checked against the
 covenant before it runs, and recorded as a receipt — with a `blocked` outcome if the covenant denies
-it. It runs on either **the first-party Anthropic API** (`ANTHROPIC_API_KEY`) or **Amazon Bedrock**
+it. The demo task deliberately tempts the agent into reading `/secrets/**`; the covenant **blocks it**,
+and the blocked attempt is itself a signed receipt in the chain.
+
+It runs on either **the first-party Anthropic API** (`ANTHROPIC_API_KEY`) or **Amazon Bedrock**
 (`AWS_BEARER_TOKEN_BEDROCK` + `AWS_REGION`); without either, the pipeline falls back to a
 deterministic simulated agent, so every step below works offline too.
+
+### Verifiable input provenance
+
+The market data the agent consumes is itself written to Walrus as a content-addressed blob, and the
+agent **cites that blob ID** in its run. The verifier re-fetches each cited blob and confirms the
+figures the agent recorded match the blob's contents — proving *provable inputs → provable process →
+provable output*, all content-addressed on Walrus.
+
+### What the verifier proves (12 checks, from a single object ID)
+
+It reads the on-chain anchor, confirms the referenced object is a **genuine Walrus `Blob`** whose
+`blob_id` matches, reloads the manifest from Walrus, then independently re-checks: the receipt hash
+chain and every Ed25519 signature; that the agent **obeyed its covenant** (re-evaluating the policy
+over every logged action, including the blocked one); that the manifest matches the anchored chain
+root / agent / covenant; and that the **cited input blobs match the recorded data**. Tamper with any
+receipt and it fails at the exact broken step.
 
 ## Stack
 
@@ -67,6 +93,8 @@ cp .env.example .env      # set SUI_PRIVATE_KEY to the printed secret
 # fund the address with testnet SUI, then:
 bun run setup             # swaps 0.5 SUI -> WAL (Walrus storage token)
 bun run balances          # check SUI + WAL
+bun run agent-keys        # prints AGENT_PRIVATE_KEY + ISSUER_PRIVATE_KEY -> paste into .env
+                          # (stable agent identity across runs)
 # optional, for the live agent: set AUDIT_ANCHOR_PACKAGE_ID and either
 #   ANTHROPIC_API_KEY  (first-party)  or  AWS_BEARER_TOKEN_BEDROCK + AWS_REGION  (Bedrock)
 ```
@@ -82,20 +110,30 @@ bun run verify <anchorObjectId>   # re-verifies everything from the anchor alone
 Then launch the public verifier:
 
 ```bash
-cd web && bun run dev     # http://localhost:3000 — paste an anchor object ID, or "Try an example"
+cd web && bun run dev     # http://localhost:3000 — paste an anchor object ID, or use the examples
 ```
 
 ## Two-minute demo script
 
-1. **Run the agent.** `bun run record-run` — Claude reads market data, scores risk, and briefs the
-   owner. Every step is checked against the covenant and recorded as a signed, hash-chained receipt.
-2. **Persist + anchor.** The run manifest lands on Walrus (content-addressed) and is anchored on Sui
-   against the real `Blob` object. You get a single Sui object ID.
-3. **Verify from nothing but that ID.** Open the web app, paste the ID. It reads the on-chain anchor,
-   confirms the genuine Walrus blob, reloads the manifest, and re-checks every Ed25519 signature and
-   the receipt hash chain — ending in a green **Verified**. Nothing private is needed.
-4. **Tamper.** Flip one byte in a receipt (`bun test` includes this case) and verification fails at
-   the exact broken step — proving the chain is real, not decorative.
+1. **Run the agent.** `bun run record-run` — the agent reads market data (from Walrus), scores risk,
+   and briefs the owner. It also *tries to read the owner's secrets* — and the covenant **blocks it**.
+   Every step, including the block, is a signed, hash-chained receipt.
+2. **Persist + anchor.** The manifest lands on Walrus (content-addressed) and is anchored on Sui
+   against the real `Blob` object, read on-chain. You get a single Sui object ID.
+3. **Verify from nothing but that ID.** Open the web app, click **Verify an example run**. It reads the
+   anchor, confirms the genuine Walrus blob, reloads the manifest, re-checks every signature and the
+   hash chain, **re-proves the agent obeyed its covenant** (the blocked `/secrets` read shows in the
+   timeline), and **re-fetches the cited input blob** to confirm the agent used exactly that data —
+   ending in a green **Verified** (12/12). Nothing private is needed.
+4. **Tamper.** Click **Tamper a receipt** — one byte is flipped and verification fails at the exact
+   broken step, proving the chain is real, not decorative.
+
+## Deploy the verifier (Vercel)
+
+The verifier is read-only and needs no secrets (it uses a public Sui RPC), which makes it the ideal
+public entry point. Deploy `web/` with **Root Directory = `proof-of-agent/web`** — the build reaches
+the sibling `../src` via `experimental.externalDir`, and the Mysten SDKs are declared in
+`web/package.json` so they resolve at runtime. No environment variables required.
 
 ## Project layout
 

@@ -37,7 +37,10 @@ export function hasBedrockCredentials(): boolean {
  * models on Bedrock. Enforcement and receipts are shared with the Claude path — only
  * the transport differs, which is exactly the point: the audit layer wraps any agent.
  */
-export async function runBedrockAgent(task?: string): Promise<RunManifest> {
+export async function runBedrockAgent(
+  task?: string,
+  datasets?: Map<string, import('./datasets').CitedDataset>,
+): Promise<RunManifest> {
   const key = process.env.AWS_BEARER_TOKEN_BEDROCK;
   if (!key) {
     throw new Error('AWS_BEARER_TOKEN_BEDROCK is not set. Add it to .env to run the Bedrock agent.');
@@ -47,7 +50,7 @@ export async function runBedrockAgent(task?: string): Promise<RunManifest> {
   const url = `https://bedrock-runtime.${region}.amazonaws.com/model/${model}/converse`;
   console.log(`agent provider: Amazon Bedrock Converse (${region}) — ${model}`);
 
-  const ctx = await startRun();
+  const ctx = await startRun({ datasets });
   const toolConfig = {
     tools: AGENT_TOOLS.map((t) => ({
       toolSpec: { name: t.name, description: t.description, inputSchema: { json: t.schema } },

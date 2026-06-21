@@ -8,6 +8,7 @@
         "@mysten/sui": "^2.19.0",
         "@mysten/walrus": "^1.2.1",
         "@nobulex/action-log": "^0.2.0",
+        "@nobulex/ccl": "^0.2.0",
         "@nobulex/core": "^0.2.1",
         "@nobulex/crypto": "^0.2.0",
         "next": "16.2.9",

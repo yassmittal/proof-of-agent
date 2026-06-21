@@ -1,6 +1,7 @@
 import { verifyIntegrity, computeEntryHash, type ActionLog } from '@nobulex/action-log';
 import { signString, verify, toHex, fromHex, type KeyPair } from '@nobulex/crypto';
-import { computeId, type CovenantDocument } from '@nobulex/core';
+import { computeId, computeEffectiveConstraints, type CovenantDocument } from '@nobulex/core';
+import { evaluate } from '@nobulex/ccl';
 
 /** An agent's DID, derived from its ed25519 public key. */
 export function agentDid(publicKeyHex: string): string {
@@ -141,10 +142,36 @@ export async function verifyRunManifest(m: RunManifest): Promise<ManifestVerific
   }
   checks.push({ name: 'signature.valid', ok: sigOk, detail: sigError });
 
-  // Consistency check only; issuer-signature and action compliance are checked by the verifier.
   checks.push({
     name: 'covenant.id matches document',
     ok: computeId(m.covenant.document) === m.covenant.id,
+  });
+
+  // Re-prove the agent stayed inside its covenant. Re-evaluate every logged action
+  // against the covenant's own constraints: actions that ran (success/failure) must be
+  // permitted, and blocked actions must be genuinely denied. This upgrades the result
+  // from "the log wasn't altered" to "the agent provably obeyed its policy".
+  let compliant = true;
+  let complianceDetail: string | undefined;
+  try {
+    const ccl = await computeEffectiveConstraints(m.covenant.document, []);
+    for (const e of m.actionLog.entries) {
+      const permitted = evaluate(ccl, e.action, e.resource).permitted;
+      const ranOrAllowed = e.outcome !== 'blocked';
+      if (permitted !== ranOrAllowed) {
+        compliant = false;
+        complianceDetail = `${e.action} on ${e.resource}: logged "${e.outcome}" but policy ${permitted ? 'permits' : 'denies'} it`;
+        break;
+      }
+    }
+  } catch (err) {
+    compliant = false;
+    complianceDetail = String(err);
+  }
+  checks.push({
+    name: 'agent obeyed its covenant (policy re-evaluated)',
+    ok: compliant,
+    detail: complianceDetail,
   });
 
   return { valid: checks.every((c) => c.ok), checks };

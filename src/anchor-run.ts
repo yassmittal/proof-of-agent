@@ -2,16 +2,25 @@ import { normalizeSuiAddress } from '@mysten/sui/utils';
 import { getClient, getKeypair, getPackageId } from './env';
 import { explorer } from './config';
 import { WalrusReceiptSink } from './sink';
+import { seedMarketDatasets } from './datasets';
 import { runAgent } from './run-agent';
 import { anchorRun, readAnchor } from './anchor';
 
 async function main() {
-  console.log('--- running agent ---');
-  const manifest = await runAgent();
-  console.log('agent did:', manifest.agent.did);
-
   const client = getClient();
   const signer = getKeypair();
+
+  let datasets;
+  try {
+    datasets = await seedMarketDatasets(client, signer, ['SUI']);
+  } catch (e) {
+    console.warn('cited-input seeding skipped:', String(e));
+  }
+
+  console.log('--- running agent ---');
+  const manifest = await runAgent(undefined, datasets);
+  console.log('agent did:', manifest.agent.did);
+  console.log('cited    :', manifest.citedInputBlobIds.join(', ') || '(none)');
 
   console.log('\n--- storing manifest on Walrus ---');
   const persisted = await new WalrusReceiptSink({ client, signer }).persistRun(manifest);
